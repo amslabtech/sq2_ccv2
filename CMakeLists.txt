@@ -6,6 +6,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 find_package(catkin REQUIRED
     roscpp
     sensor_msgs
+    geometry_msgs
 )
 
 find_package(ypspur_mqtt REQUIRED)
