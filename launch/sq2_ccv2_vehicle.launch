@@ -3,7 +3,7 @@
 <launch>
     <node pkg="ypspur_ros" type="ypspur_ros" name="t_frog" respawn="true">
 
-        <remap from="/cmd_vel" to="/cmd_vel" />
+        <remap from="~/cmd_vel" to="/cmd_vel" />
         <remap from="~/odom" to="/odom" />
 
         <param name="base_link_id" value="base_link" />
