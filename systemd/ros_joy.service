@@ -1,0 +1,14 @@
+[Unit]
+Description=joy launcher
+After=ros_roscore.service dev-ps4_usb.device
+Requires=ros_roscore.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S joy -ADm bash -l -c 'rosrun joy joy_node _dev:=/dev/ps4_usb'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

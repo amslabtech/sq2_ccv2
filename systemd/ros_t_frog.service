@@ -1,0 +1,14 @@
+[Unit]
+Description=t_frog launcher
+After=ros_roscore.service dev-T_Frog.device
+Requires=ros_roscore.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S t_frog -ADm bash -l -c 'roslaunch sq2_ccv2 sq2_ccv2_vehicle.launch --screen --wait'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=teleop launcher
+After=ros_roscore.service
+Requires=ros_roscore.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S teleop -ADm bash -l -c 'rosrun sq2_ccv2 ccv2_teleoperator'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
