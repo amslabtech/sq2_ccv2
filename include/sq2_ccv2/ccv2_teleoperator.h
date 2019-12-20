@@ -40,7 +40,7 @@ private:
     ros::Subscriber joy_sub;
 
     // MQTT
-    // Mosquitto cmd_vel_publisher;
+    struct mosquitto *mosq;
 };
 
 #endif// __CCV2_TELEOPERATOR_H
