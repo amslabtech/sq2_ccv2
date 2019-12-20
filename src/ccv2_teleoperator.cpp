@@ -107,7 +107,11 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
     cmd_vel.angular.z = w;
     cmd_vel_pub.publish(cmd_vel);
 
+    struct timeval ts;
+    gettimeofday(&ts, NULL);
     YPSpurWrapper::VelocityData vd;
+    vd.sec = ts.tv_sec;
+    vd.usec = ts.tv_usec;
     vd.v = v;
     vd.w = w;
     mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
