@@ -7,6 +7,8 @@ find_package(catkin REQUIRED
     roscpp
     sensor_msgs
     geometry_msgs
+    nav_msgs
+    tf
 )
 
 find_package(ypspur_mqtt REQUIRED)
@@ -26,6 +28,15 @@ add_executable(ccv2_teleoperator src/ccv2_teleoperator_node.cpp src/ccv2_teleope
 add_dependencies(ccv2_teleoperator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(ccv2_teleoperator
+    mosquitto
+    ${catkin_LIBRARIES}
+)
+
+add_executable(odom_converter src/odom_converter_node.cpp src/odom_converter.cpp)
+
+add_dependencies(odom_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(odom_converter
     mosquitto
     ${catkin_LIBRARIES}
 )
