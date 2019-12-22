@@ -1,0 +1,14 @@
+[Unit]
+Description=ros from mqtt launcher
+After=ros_roscore.service mosquitto.service
+Requires=ros_roscore.service mosquitto.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S ros_from_mqtt -ADm bash -l -c 'roslaunch sq2_ccv2 ros_from_mqtt.launch --screen --wait '
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

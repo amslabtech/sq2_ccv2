@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<launch>
+    <node pkg="sq2_ccv2" type="odom_converter" name="odom_converter" respawn="true">
+    </node>
+    <node pkg="sq2_ccv2" type="imu_converter" name="imu_converter" respawn="true">
+    </node>
+</launch>
