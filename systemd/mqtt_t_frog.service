@@ -1,0 +1,14 @@
+[Unit]
+Description=mqtt t_frog launcher
+After=mosquitto.service dev-T_Frog.device
+Requires=mosquitto.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S t_frog -ADm bash -l -c 'ypspur_mqtt -d /dev/T_Frog -p /home/amsl/ros_catkin_ws/src/sq2_ccv2/config/sq2_ccv2.param'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
