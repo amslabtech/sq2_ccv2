@@ -24,19 +24,22 @@ include_directories(
 )
 
 add_executable(ccv2_teleoperator src/ccv2_teleoperator_node.cpp src/ccv2_teleoperator.cpp)
-
 add_dependencies(ccv2_teleoperator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(ccv2_teleoperator
     mosquitto
     ${catkin_LIBRARIES}
 )
 
 add_executable(odom_converter src/odom_converter_node.cpp src/odom_converter.cpp)
-
 add_dependencies(odom_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(odom_converter
+    mosquitto
+    ${catkin_LIBRARIES}
+)
+
+add_executable(imu_converter src/imu_converter_node.cpp src/imu_converter.cpp)
+add_dependencies(imu_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(imu_converter
     mosquitto
     ${catkin_LIBRARIES}
 )
