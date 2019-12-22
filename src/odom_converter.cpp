@@ -84,8 +84,9 @@ void OdomConverter::process(void)
         if(od != NULL){
             nav_msgs::Odometry odom;
             odom.header.frame_id = FRAME_ID;
-            double stamp = od->sec + od->usec * 1e-6;
-            odom.header.stamp = ros::Time(stamp);
+            // double stamp = od->sec + od->usec * 1e-6;
+            // odom.header.stamp = ros::Time(stamp);
+            odom.header.stamp = ros::Time::now();
             static uint32_t seq = 0;
             odom.header.seq = seq;
             seq++;
