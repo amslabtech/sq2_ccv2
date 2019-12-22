@@ -98,6 +98,11 @@ void OdomConverter::process(void)
             odom.twist.twist.angular.z = od->w;
             odom_pub.publish(odom);
             std::cout << odom << std::endl;
+
+            tf::Transform odom_to_robot;
+            tf::poseMsgToTF(odom.pose.pose, odom_to_robot);
+            broadcaster.sendTransform(tf::StampedTransform(odom_to_robot, odom.header.stamp, odom.header.frame_id, odom.child_frame_id));
+
             od = NULL;
         }else{
             std::cout << "no odom data" << std::endl;

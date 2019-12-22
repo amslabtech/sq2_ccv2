@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
 
 #include "ypspur_mqtt/odometry_data.h"
 
@@ -27,6 +28,8 @@ private:
     ros::NodeHandle nh;
     ros::NodeHandle local_nh;
     ros::Publisher odom_pub;
+
+    tf::TransformBroadcaster broadcaster;
 
     // MQTT
     struct mosquitto *mosq;
