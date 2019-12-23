@@ -1,4 +1,5 @@
 #include "sq2_ccv2/ccv2_teleoperator.h"
+#include "ccv_servo_structure.hpp"
 
 void on_connect(struct mosquitto *mosq, void *obj, int result)
 {
@@ -98,6 +99,7 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
             v = 0.0;
             w = 0.0;
         }
+        steering = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, steering));
     }else{
         std::cout << "press L1 to move" << std::endl;
     }
@@ -115,4 +117,10 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
     vd.v = v;
     vd.w = w;
     mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
+
+    CcvServoStructure servo_command{0, 0, 0};
+    servo_command.command_position[servo::STEER] = steering;
+    mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
+    std::cout << "servo states: " << std::endl;
+    servo_command.print_command();
 }
