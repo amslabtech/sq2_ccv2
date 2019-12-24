@@ -36,6 +36,9 @@ private:
     double MAX_VELOCITY;
     double MAX_ANGULAR_VELOCITY;
     double MAX_STEERING_ANGLE;
+    double MAX_PITCH_ANGLE;
+    double MAX_ROLL_ANGLE;
+    double PITCH_OFFSET;
 
     ros::NodeHandle nh;
     ros::NodeHandle local_nh;

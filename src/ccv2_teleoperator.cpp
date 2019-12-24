@@ -39,9 +39,12 @@ CCV2Teleoperator::CCV2Teleoperator(void)
 
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     joy_sub = nh.subscribe("joy", 1, &CCV2Teleoperator::joy_callback, this, ros::TransportHints().tcpNoDelay());
-    local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.0});
+    local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.5});
     local_nh.param<double>("MAX_ANGULAR_VELOCITY", MAX_ANGULAR_VELOCITY, {M_PI});
-    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {M_PI / 12.0});
+    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {0.418});
+    local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
+    local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
+    local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {1.5 * M_PI / 180.0});
 
     mosq = NULL;
 }
@@ -85,6 +88,8 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
     double v = 0.0;
     double w = 0.0;
     double steering = 0.0;
+    double pitch = 0.0;
+    double roll = 0.0;
     if(msg->buttons[L1]){
         v = msg->axes[L_STICK_V] * MAX_VELOCITY;
         w = msg->axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
@@ -100,6 +105,10 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
             w = 0.0;
         }
         steering = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, steering));
+        pitch = msg->axes[R_STICK_V] * MAX_PITCH_ANGLE;
+        pitch = std::max(-MAX_PITCH_ANGLE, std::min(MAX_PITCH_ANGLE, pitch));
+        roll = msg->axes[R_STICK_H] * MAX_ROLL_ANGLE;
+        roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
     }else{
         std::cout << "press L1 to move" << std::endl;
     }
@@ -119,7 +128,10 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
     mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
 
     CcvServoStructure servo_command{0, 0, 0};
-    servo_command.command_position[servo::STEER] = steering;
+    servo_command.command_position[servo::STEER] = -steering;
+    servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
+    servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
+    servo_command.command_position[servo::ROLL] = -roll;
     mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
     std::cout << "servo states: " << std::endl;
     servo_command.print_command();
