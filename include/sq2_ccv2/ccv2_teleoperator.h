@@ -45,6 +45,9 @@ private:
     ros::Publisher cmd_vel_pub;
     ros::Subscriber joy_sub;
 
+    sensor_msgs::Joy joy;
+    bool joy_subscribed;
+
     // MQTT
     struct mosquitto *mosq;
 };

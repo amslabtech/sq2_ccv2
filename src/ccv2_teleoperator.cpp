@@ -46,6 +46,8 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
     local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {1.5 * M_PI / 180.0});
 
+    joy_subscribed = false;
+
     mosq = NULL;
 }
 
@@ -77,7 +79,63 @@ void CCV2Teleoperator::process(void)
 
     mosquitto_loop_start(mosq);
 
-    ros::spin();
+    ros::Rate loop_rate(50);
+    while(ros::ok()){
+        if(joy_subscribed){
+            double v = 0.0;
+            double w = 0.0;
+            double steering = 0.0;
+            double pitch = 0.0;
+            double roll = 0.0;
+            if(joy.buttons[L1]){
+                v = joy.axes[L_STICK_V] * MAX_VELOCITY;
+                w = joy.axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
+                if(joy.buttons[L2] && !joy.buttons[R2]){
+                    w = 0.0;
+                    steering = MAX_STEERING_ANGLE * (1.0 - (joy.axes[L2_STICK] + 1.0) * 0.5);
+                }else if(joy.buttons[R2] && !joy.buttons[L2]){
+                    w = 0.0;
+                    steering = -MAX_STEERING_ANGLE * (1.0 - (joy.axes[R2_STICK] + 1.0) * 0.5);
+                }else if(joy.buttons[R2] && joy.buttons[L2]){
+                    std::cout << "brake" << std::endl;
+                    v = 0.0;
+                    w = 0.0;
+                }
+                steering = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, steering));
+                pitch = joy.axes[R_STICK_V] * MAX_PITCH_ANGLE;
+                pitch = std::max(-MAX_PITCH_ANGLE, std::min(MAX_PITCH_ANGLE, pitch));
+                roll = joy.axes[R_STICK_H] * MAX_ROLL_ANGLE;
+                roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
+            }else{
+                std::cout << "press L1 to move" << std::endl;
+            }
+            std::cout << "v: " << v << ", " << "w: " << w << ", " << "steering: " << steering << std::endl;
+            geometry_msgs::Twist cmd_vel;
+            cmd_vel.linear.x = v;
+            cmd_vel.angular.z = w;
+            cmd_vel_pub.publish(cmd_vel);
+
+            struct timeval ts;
+            gettimeofday(&ts, NULL);
+            YPSpurWrapper::VelocityData vd;
+            vd.sec = ts.tv_sec;
+            vd.usec = ts.tv_usec;
+            vd.v = v;
+            vd.w = w;
+            mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
+
+            CcvServoStructure servo_command{0, 0, 0};
+            servo_command.command_position[servo::STEER] = -steering;
+            servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
+            servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
+            servo_command.command_position[servo::ROLL] = -roll;
+            mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
+            std::cout << "servo states: " << std::endl;
+            servo_command.print_command();
+        }
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 
     mosquitto_destroy(mosq);
     mosquitto_lib_cleanup();
@@ -85,54 +143,6 @@ void CCV2Teleoperator::process(void)
 
 void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
 {
-    double v = 0.0;
-    double w = 0.0;
-    double steering = 0.0;
-    double pitch = 0.0;
-    double roll = 0.0;
-    if(msg->buttons[L1]){
-        v = msg->axes[L_STICK_V] * MAX_VELOCITY;
-        w = msg->axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
-        if(msg->buttons[L2] && !msg->buttons[R2]){
-            w = 0.0;
-            steering = MAX_STEERING_ANGLE * (1.0 - (msg->axes[L2_STICK] + 1.0) * 0.5);
-        }else if(msg->buttons[R2] && !msg->buttons[L2]){
-            w = 0.0;
-            steering = -MAX_STEERING_ANGLE * (1.0 - (msg->axes[R2_STICK] + 1.0) * 0.5);
-        }else if(msg->buttons[R2] && msg->buttons[L2]){
-            std::cout << "brake" << std::endl;
-            v = 0.0;
-            w = 0.0;
-        }
-        steering = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, steering));
-        pitch = msg->axes[R_STICK_V] * MAX_PITCH_ANGLE;
-        pitch = std::max(-MAX_PITCH_ANGLE, std::min(MAX_PITCH_ANGLE, pitch));
-        roll = msg->axes[R_STICK_H] * MAX_ROLL_ANGLE;
-        roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
-    }else{
-        std::cout << "press L1 to move" << std::endl;
-    }
-    std::cout << "v: " << v << ", " << "w: " << w << ", " << "steering: " << steering << std::endl;
-    geometry_msgs::Twist cmd_vel;
-    cmd_vel.linear.x = v;
-    cmd_vel.angular.z = w;
-    cmd_vel_pub.publish(cmd_vel);
-
-    struct timeval ts;
-    gettimeofday(&ts, NULL);
-    YPSpurWrapper::VelocityData vd;
-    vd.sec = ts.tv_sec;
-    vd.usec = ts.tv_usec;
-    vd.v = v;
-    vd.w = w;
-    mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
-
-    CcvServoStructure servo_command{0, 0, 0};
-    servo_command.command_position[servo::STEER] = -steering;
-    servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
-    servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
-    servo_command.command_position[servo::ROLL] = -roll;
-    mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
-    std::cout << "servo states: " << std::endl;
-    servo_command.print_command();
+    joy = *msg;
+    joy_subscribed = true;
 }
