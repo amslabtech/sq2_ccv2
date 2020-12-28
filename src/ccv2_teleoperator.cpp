@@ -45,6 +45,7 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
     local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {3.0 * M_PI / 180.0});
+    local_nh.param<double>("TREAD", TREAD, {0.5});
 
     joy_subscribed = false;
     mode = 0;
@@ -85,7 +86,9 @@ void CCV2Teleoperator::process(void)
         if(joy_subscribed){
             double v = 0.0;
             double w = 0.0;
-            double steering = 0.0;
+            double direction = 0.0;
+            double d_i = 0.0;
+            double d_o = 0.0;
             double pitch = 0.0;
             double roll = 0.0;
             if(joy.buttons[CIRCLE]){
@@ -106,16 +109,16 @@ void CCV2Teleoperator::process(void)
                     }
                     // std::cout << joy.axes[R_STICK_H] << ", " << joy.axes[R_STICK_V] << std::endl;
                     // std::cout << stick_angle << std::endl;
-                    steering = stick_angle / 2.0;
+                    direction = stick_angle / 2.0;
                 }else if(mode == 1){
                     v = joy.axes[L_STICK_V] * MAX_VELOCITY;
                     w = joy.axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
                     if(joy.buttons[L2] && !joy.buttons[R2]){
                         // w = 0.0;
-                        steering = MAX_STEERING_ANGLE * (1.0 - (joy.axes[L2_STICK] + 1.0) * 0.5);
+                        direction = MAX_STEERING_ANGLE * (1.0 - (joy.axes[L2_STICK] + 1.0) * 0.5);
                     }else if(joy.buttons[R2] && !joy.buttons[L2]){
                         // w = 0.0;
-                        steering = -MAX_STEERING_ANGLE * (1.0 - (joy.axes[R2_STICK] + 1.0) * 0.5);
+                        direction = -MAX_STEERING_ANGLE * (1.0 - (joy.axes[R2_STICK] + 1.0) * 0.5);
                     }else if(joy.buttons[R2] && joy.buttons[L2]){
                         // std::cout << "brake" << std::endl;
                         v = 0.0;
@@ -126,11 +129,24 @@ void CCV2Teleoperator::process(void)
                     roll = joy.axes[R_STICK_H] * MAX_ROLL_ANGLE;
                     roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
                 }
-                steering = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, steering));
+                direction = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, direction));
+                if(abs(w) > 1e-2){
+                    double r = abs(v / w);
+                    d_i = atan(r * sin(direction) / (r * cos(direction) - TREAD / 2.0));
+                    d_o = atan(r * sin(direction) / (r * cos(direction) + TREAD / 2.0));
+                    if(w < 0.0){
+                        double buf = d_i;
+                        d_i = d_o;
+                        d_o = buf;
+                    }
+                }else{
+                    d_i = direction;
+                    d_o = direction;
+                }
             }else{
                 // std::cout << "press L1 to move" << std::endl;
             }
-            // std::cout << "v: " << v << ", " << "w: " << w << ", " << "steering: " << steering << std::endl;
+            // std::cout << "v: " << v << ", " << "w: " << w << ", " << "direction: " << direction << std::endl;
             geometry_msgs::Twist cmd_vel;
             cmd_vel.linear.x = v;
             cmd_vel.angular.z = w;
@@ -146,7 +162,8 @@ void CCV2Teleoperator::process(void)
             mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
 
             CcvServoStructure servo_command{0, 0, 0};
-            servo_command.command_position[servo::STEER] = -steering;
+            servo_command.command_position[servo::STRR] = -d_o;
+            servo_command.command_position[servo::STRL] = -d_i;
             servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
             servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
             servo_command.command_position[servo::ROLL] = -roll;
