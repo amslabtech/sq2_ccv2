@@ -1,5 +1,5 @@
 #include "sq2_ccv2/ccv2_teleoperator.h"
-#include "ccv_servo_structure.hpp"
+// #include "ccv_servo_structure.hpp"
 
 void on_connect(struct mosquitto *mosq, void *obj, int result)
 {
@@ -38,6 +38,7 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     // std::cout << "=== ccv2_teleoperator ===" << std::endl;
 
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    pub_cmd_pos_ = nh.advertise<ccv_dynamixel_msgs::CmdPoseByRadian>("cmd_pos", 1);
     joy_sub = nh.subscribe("joy", 1, &CCV2Teleoperator::joy_callback, this, ros::TransportHints().tcpNoDelay());
     local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.5});
     local_nh.param<double>("MAX_ANGULAR_VELOCITY", MAX_ANGULAR_VELOCITY, {M_PI});
@@ -61,25 +62,25 @@ void CCV2Teleoperator::process(void)
     int keepalive = 60;
     bool clean_session = true;
 
-    mosquitto_lib_init();
-    mosq = mosquitto_new(id, clean_session, NULL);
-    if(!mosq){
-        // fprintf(stderr, "Cannot create mosquitto object\n");
-        mosquitto_lib_cleanup();
-        return;
-    }
-    mosquitto_connect_callback_set(mosq, on_connect);
-    mosquitto_disconnect_callback_set(mosq, on_disconnect);
-    mosquitto_publish_callback_set(mosq, on_publish);
-    mosquitto_message_callback_set(mosq, on_message);
-
-    if(mosquitto_connect_bind(mosq, host, port, keepalive, NULL)){
-        // fprintf(stderr, "failed to connect broker.\n");
-        mosquitto_lib_cleanup();
-        return;
-    }
-
-    mosquitto_loop_start(mosq);
+    // mosquitto_lib_init();
+    // mosq = mosquitto_new(id, clean_session, NULL);
+    // if(!mosq){
+    //     // fprintf(stderr, "Cannot create mosquitto object\n");
+    //     mosquitto_lib_cleanup();
+    //     return;
+    // }
+    // mosquitto_connect_callback_set(mosq, on_connect);
+    // mosquitto_disconnect_callback_set(mosq, on_disconnect);
+    // mosquitto_publish_callback_set(mosq, on_publish);
+    // mosquitto_message_callback_set(mosq, on_message);
+    //
+    // if(mosquitto_connect_bind(mosq, host, port, keepalive, NULL)){
+    //     // fprintf(stderr, "failed to connect broker.\n");
+    //     mosquitto_lib_cleanup();
+    //     return;
+    // }
+    //
+    // mosquitto_loop_start(mosq);
 
     ros::Rate loop_rate(50);
     while(ros::ok()){
@@ -146,7 +147,7 @@ void CCV2Teleoperator::process(void)
             }else{
                 // std::cout << "press L1 to move" << std::endl;
             }
-            // std::cout << "v: " << v << ", " << "w: " << w << ", " << "direction: " << direction << std::endl;
+            std::cout << "v: " << v << ", " << "w: " << w << ", " << "direction: " << direction << std::endl;
             geometry_msgs::Twist cmd_vel;
             cmd_vel.linear.x = v;
             cmd_vel.angular.z = w;
@@ -159,24 +160,32 @@ void CCV2Teleoperator::process(void)
             vd.usec = ts.tv_usec;
             vd.v = v;
             vd.w = w;
-            mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
+            // mosquitto_publish(mosq, NULL, "cmd_vel", sizeof(vd), (void*)&vd, 0, 0);
 
-            CcvServoStructure servo_command{0, 0, 0};
-            servo_command.command_position[servo::STRR] = -d_o;
-            servo_command.command_position[servo::STRL] = -d_i;
-            servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
-            servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
-            servo_command.command_position[servo::ROLL] = -roll;
-            mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
+            // CcvServoStructure servo_command{0, 0, 0};
+            // servo_command.command_position[servo::STRR] = -d_o;
+            // servo_command.command_position[servo::STRL] = -d_i;
+            // servo_command.command_position[servo::FORE] = -pitch + PITCH_OFFSET;
+            // servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
+            // servo_command.command_position[servo::ROLL] = -roll;
+            ccv_dynamixel_msgs::CmdPoseByRadian cmd_pos;
+            cmd_pos.steer_r = -d_o;
+            cmd_pos.steer_l = -d_i;
+            cmd_pos.fore = -pitch + PITCH_OFFSET;
+            cmd_pos.rear = pitch + PITCH_OFFSET;
+            cmd_pos.roll = -roll;
+            // mosquitto_publish(mosq, NULL, servo::topic_write, sizeof(servo_command), (void*)&servo_command, 0, 0);
             // std::cout << "servo states: " << std::endl;
-            servo_command.print_command();
+            // servo_command.print_command();
+            pub_cmd_pos_.publish(cmd_pos);
+            std::cout << "send command of dynamixels:\n" << cmd_pos <<std::endl;
         }
         ros::spinOnce();
         loop_rate.sleep();
     }
 
-    mosquitto_destroy(mosq);
-    mosquitto_lib_cleanup();
+    // mosquitto_destroy(mosq);
+    // mosquitto_lib_cleanup();
 }
 
 void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)

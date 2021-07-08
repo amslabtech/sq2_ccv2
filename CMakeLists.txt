@@ -9,7 +9,9 @@ find_package(catkin REQUIRED
     geometry_msgs
     nav_msgs
     tf
+    ccv_dynamixel_msgs
 )
+
 
 find_package(ypspur_mqtt REQUIRED)
 

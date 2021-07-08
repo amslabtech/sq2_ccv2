@@ -12,6 +12,8 @@
 
 #include <mosquitto.h>
 
+#include <ccv_dynamixel_msgs/CmdPoseByRadian.h>
+
 class CCV2Teleoperator
 {
 public:
@@ -46,6 +48,7 @@ private:
     ros::NodeHandle nh;
     ros::NodeHandle local_nh;
     ros::Publisher cmd_vel_pub;
+    ros::Publisher pub_cmd_pos_;
     ros::Subscriber joy_sub;
 
     sensor_msgs::Joy joy;
