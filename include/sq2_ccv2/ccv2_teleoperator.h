@@ -31,7 +31,9 @@ private:
     static constexpr int R_STICK_V = 4;
     static constexpr int R2_STICK = 5;
     // buttons
+    // static constexpr int CROSS = 0;
     static constexpr int CIRCLE = 1;
+    // static constexpr int TRIANGLE = 2;
     static constexpr int SQUARE = 3;
     static constexpr int L1 = 4;
     static constexpr int L2 = 6;
