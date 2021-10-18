@@ -41,7 +41,7 @@ IMUConverter::IMUConverter(void)
     imu_pub = nh.advertise<sensor_msgs::Imu>("/imu/data", 1);
 
     local_nh.param<double>("HZ", HZ, {200});
-    local_nh.param<std::string>("FRAME_ID", FRAME_ID, {"/imu"});
+    local_nh.param<std::string>("FRAME_ID", FRAME_ID, {"imu"});
 
     std::cout << "HZ: " << HZ << std::endl;
     std::cout << "FRAME_ID: " << FRAME_ID << std::endl;

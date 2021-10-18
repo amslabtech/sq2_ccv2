@@ -42,7 +42,7 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     joy_sub = nh.subscribe("joy", 1, &CCV2Teleoperator::joy_callback, this, ros::TransportHints().tcpNoDelay());
     local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.5});
     local_nh.param<double>("MAX_ANGULAR_VELOCITY", MAX_ANGULAR_VELOCITY, {M_PI});
-    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {0.418});
+    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {M_PI/20});
     local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
     local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {3.0 * M_PI / 180.0});
