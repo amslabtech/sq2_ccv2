@@ -21,6 +21,8 @@ public:
 
     void process(void);
     void joy_callback(const sensor_msgs::JoyConstPtr&);
+    void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr &msg);
+    void cmd_pos_callback(const ccv_dynamixel_msgs::CmdPoseByRadian::ConstPtr &msg);
 
 private:
     // axes
@@ -31,9 +33,9 @@ private:
     static constexpr int R_STICK_V = 4;
     static constexpr int R2_STICK = 5;
     // buttons
-    // static constexpr int CROSS = 0;
+    static constexpr int CROSS = 0;
     static constexpr int CIRCLE = 1;
-    // static constexpr int TRIANGLE = 2;
+    static constexpr int TRIANGLE = 2;
     static constexpr int SQUARE = 3;
     static constexpr int L1 = 4;
     static constexpr int L2 = 6;
@@ -52,8 +54,12 @@ private:
     ros::Publisher cmd_vel_pub;
     ros::Publisher pub_cmd_pos_;
     ros::Subscriber joy_sub;
+    ros::Subscriber sub_cmd_vel_;
+    ros::Subscriber sub_cmd_pos_;
 
     sensor_msgs::Joy joy;
+    geometry_msgs::Twist cmd_vel_;
+    ccv_dynamixel_msgs::CmdPoseByRadian cmd_pos_;
     bool joy_subscribed;
     int mode;
 

@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="rviz" default="false" />
+    <arg name="rviz" default="true" />
     <!-- tf -->
-    <param name="robot_description"
-        command="$(find xacro)/xacro '$(find sq2_ccv_description)/robot/sq2_ccv.urdf'"/>
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true">
-        <param name="publish_frequency" value="200.0" />
-    </node>
+    <!-- <param name="robot_description" -->
+    <!--     command="$(find xacro)/xacro '$(find sq2_ccv_description)/robot/sq2_ccv.urdf'"/> -->
+    <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true"> -->
+    <!--     <param name="publish_frequency" value="200.0" /> -->
+    <!-- </node> -->
+    <include file="$(find sq2_ccv2)/launch/ccv2_tf.launch"/>
 
     <!-- vehicle  -->
     <include file="$(find sq2_ccv2)/launch/sq2_ccv2_vehicle.launch"/>
@@ -25,8 +26,9 @@
         <arg name="device_ip" value="192.168.0.118"/>
         <arg name="rpm" value="600"/>
     </include>
+
     <!-- <!&#45;&#45; camera &#45;&#45;> -->
-    <!-- <include file="$(find sq2_common)/launch/sq2_realsense.launch"/> -->
+    <include file="$(find sq2_ccv2)/launch/ccv2_realsense.launch"/>
     <!--  -->
     <!-- imu&odom converter -->
     <include file="$(find sq2_ccv2)/launch/ros_from_mqtt.launch"/>
@@ -35,11 +37,12 @@
     <!--     <remap from="odom" to="t_frog/odom"/> -->
     <!-- </node> -->
    <!-- teleop -->
-    <include file="$(find sq2_ccv2)/launch/ccv2_teleoplate.launch"/>
+    <include file="$(find sq2_ccv2)/launch/ccv2_teleoplate.launch">
+    </include>
     <!-- dynamixel -->
     <include file="$(find ccv_dynamixel_controller)/launch/ccv_dynamixel_controller.launch"/>
 
     <!-- rviz -->
-   <!--  <node pkg="rviz" name="rviz" type="rviz" args="&#45;d $(find sq2_common)/config/sq2_default.rviz" if="$(arg rviz)"/> -->
+    <node pkg="rviz" name="rviz" type="rviz" args="-d $(find steering_path_planner)/config/ccv2.rviz" if="$(arg rviz)"/>
    <!--  -->
 </launch>

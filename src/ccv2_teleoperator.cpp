@@ -40,12 +40,15 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pub_cmd_pos_ = nh.advertise<ccv_dynamixel_msgs::CmdPoseByRadian>("cmd_pos", 1);
     joy_sub = nh.subscribe("joy", 1, &CCV2Teleoperator::joy_callback, this, ros::TransportHints().tcpNoDelay());
+    sub_cmd_pos_ = nh.subscribe("/local/cmd_pos", 1, &CCV2Teleoperator::cmd_pos_callback, this, ros::TransportHints().tcpNoDelay());
+    sub_cmd_vel_ = nh.subscribe("/local/cmd_vel", 1, &CCV2Teleoperator::cmd_vel_callback, this, ros::TransportHints().tcpNoDelay());
+
     local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.5});
     local_nh.param<double>("MAX_ANGULAR_VELOCITY", MAX_ANGULAR_VELOCITY, {M_PI});
     local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {M_PI/20});
     local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
-    local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {3.0 * M_PI / 180.0});
+    local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {0.0 * M_PI / 180.0});
     local_nh.param<double>("TREAD", TREAD, {0.5});
 
     joy_subscribed = false;
@@ -92,12 +95,23 @@ void CCV2Teleoperator::process(void)
             double d_o = 0.0;
             double pitch = 0.0;
             double roll = 0.0;
-            if(joy.buttons[CIRCLE]){
+            if(joy.buttons[CROSS])
+            {
+                mode = -1;
+            }
+            else if(joy.buttons[CIRCLE]){
                 mode = 0;
             }else if(joy.buttons[SQUARE]){
                 mode = 1;
             }
             std::cout << "mode: " << mode << std::endl;
+            if(mode == -1)
+            {
+                v = 0.0;
+                w = 0.0;
+                d_o = 0.0;
+                d_i = 0.0;
+            }
             if(joy.buttons[L1]){
                 if(mode == 0){
                     v = joy.axes[L_STICK_V] * MAX_VELOCITY;
@@ -112,23 +126,26 @@ void CCV2Teleoperator::process(void)
                     // std::cout << stick_angle << std::endl;
                     direction = stick_angle / 2.0;
                 }else if(mode == 1){
-                    v = joy.axes[L_STICK_V] * MAX_VELOCITY;
-                    w = joy.axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
-                    if(joy.buttons[L2] && !joy.buttons[R2]){
-                        // w = 0.0;
-                        direction = MAX_STEERING_ANGLE * (1.0 - (joy.axes[L2_STICK] + 1.0) * 0.5);
-                    }else if(joy.buttons[R2] && !joy.buttons[L2]){
-                        // w = 0.0;
-                        direction = -MAX_STEERING_ANGLE * (1.0 - (joy.axes[R2_STICK] + 1.0) * 0.5);
-                    }else if(joy.buttons[R2] && joy.buttons[L2]){
-                        // std::cout << "brake" << std::endl;
-                        v = 0.0;
-                        w = 0.0;
-                    }
-                    pitch = joy.axes[R_STICK_V] * MAX_PITCH_ANGLE;
-                    pitch = std::max(-MAX_PITCH_ANGLE, std::min(MAX_PITCH_ANGLE, pitch));
-                    roll = joy.axes[R_STICK_H] * MAX_ROLL_ANGLE;
-                    roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
+                    v = cmd_vel_.linear.x;
+                    w = cmd_vel_.angular.z;
+
+                    // v = joy.axes[L_STICK_V] * MAX_VELOCITY;
+                    // w = joy.axes[L_STICK_H] * MAX_ANGULAR_VELOCITY;
+                    // if(joy.buttons[L2] && !joy.buttons[R2]){
+                    //     // w = 0.0;
+                    //     direction = MAX_STEERING_ANGLE * (1.0 - (joy.axes[L2_STICK] + 1.0) * 0.5);
+                    // }else if(joy.buttons[R2] && !joy.buttons[L2]){
+                    //     // w = 0.0;
+                    //     direction = -MAX_STEERING_ANGLE * (1.0 - (joy.axes[R2_STICK] + 1.0) * 0.5);
+                    // }else if(joy.buttons[R2] && joy.buttons[L2]){
+                    //     // std::cout << "brake" << std::endl;
+                    //     v = 0.0;
+                    //     w = 0.0;
+                    // }
+                    // pitch = joy.axes[R_STICK_V] * MAX_PITCH_ANGLE;
+                    // pitch = std::max(-MAX_PITCH_ANGLE, std::min(MAX_PITCH_ANGLE, pitch));
+                    // roll = joy.axes[R_STICK_H] * MAX_ROLL_ANGLE;
+                    // roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
                 }
                 direction = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, direction));
                 if(abs(w) > 1e-2){
@@ -169,8 +186,16 @@ void CCV2Teleoperator::process(void)
             // servo_command.command_position[servo::REAR] = pitch + PITCH_OFFSET;
             // servo_command.command_position[servo::ROLL] = -roll;
             ccv_dynamixel_msgs::CmdPoseByRadian cmd_pos;
-            cmd_pos.steer_r = -d_o;
-            cmd_pos.steer_l = -d_i;
+            if(mode!=1)
+            {
+                cmd_pos.steer_r = -d_o;
+                cmd_pos.steer_l = -d_i;
+            }
+            else
+            {
+                cmd_pos.steer_r = cmd_pos_.steer_r;
+                cmd_pos.steer_l = cmd_pos_.steer_l;
+            }
             cmd_pos.fore = -pitch + PITCH_OFFSET;
             cmd_pos.rear = pitch + PITCH_OFFSET;
             cmd_pos.roll = -roll;
@@ -192,4 +217,14 @@ void CCV2Teleoperator::joy_callback(const sensor_msgs::JoyConstPtr& msg)
 {
     joy = *msg;
     joy_subscribed = true;
+}
+
+void CCV2Teleoperator::cmd_vel_callback(const geometry_msgs::Twist::ConstPtr &msg)
+{
+    cmd_vel_ = *msg;
+}
+
+void CCV2Teleoperator::cmd_pos_callback(const ccv_dynamixel_msgs::CmdPoseByRadian::ConstPtr &msg)
+{
+    cmd_pos_ = *msg;
 }

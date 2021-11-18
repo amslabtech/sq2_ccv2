@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="battery_box_to_velodyne" pkg="tf2_ros" type="static_transform_publisher" args="0 0 1.0 0 0 0 1 /battery_box_link /velodyne"/>
+    <node name="battery_box_to_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 -0.1 0 0 0 1 /battery_box_link /imu"/>
+
+    <node name="base_link_to_battery_box" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0.2 0 0 0 1 /base_link /battery_box_link"/>
+    <!-- <node name="battery_box_tf_broadcaster" pkg="sq2_ccv2" type="battery_box_tf_broadcaster" output="screen"/> -->
+    <node name="battery_box_to_front_cam" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0.88 0 0 0 1 /battery_box_link /front_cam_link"/>
+    <!-- <node name="battery_box_to_front_left_cam" pkg="tf2_ros" type="static_transform_publisher" args="0.01094 0.003554 0.88 0 0 0.58779 0.80908 /battery_box_link /front_left_cam_link"/> -->
+    <!-- <node name="battery_box_to_front_right_cam" pkg="tf2_ros" type="static_transform_publisher" args="0.01094 -0.003554 0.88 0 0 -0.58779 0.80908 /battery_box_link /front_right_cam_link"/> -->
+</launch>
