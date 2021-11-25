@@ -49,6 +49,8 @@ CCV2Teleoperator::CCV2Teleoperator(void)
     local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
     local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {0.0 * M_PI / 180.0});
+    local_nh.param<double>("STEER_R_OFFSET", STEER_R_OFFSET, {3.25 * M_PI / 180.0});
+    local_nh.param<double>("STEER_L_OFFSET", STEER_L_OFFSET, {0.0 * M_PI / 180.0});
     local_nh.param<double>("TREAD", TREAD, {0.5});
 
     joy_subscribed = false;
@@ -125,7 +127,7 @@ void CCV2Teleoperator::process(void)
                     // std::cout << joy.axes[R_STICK_H] << ", " << joy.axes[R_STICK_V] << std::endl;
                     // std::cout << stick_angle << std::endl;
                     direction = stick_angle / 2.0;
-                }else if(mode == 1){
+                }else if(mode == 2){
                     v = cmd_vel_.linear.x;
                     w = cmd_vel_.angular.z;
 
@@ -147,6 +149,13 @@ void CCV2Teleoperator::process(void)
                     // roll = joy.axes[R_STICK_H] * MAX_ROLL_ANGLE;
                     // roll = std::max(-MAX_ROLL_ANGLE, std::min(MAX_ROLL_ANGLE, roll));
                 }
+
+                // if(mode == 1)
+                // {
+                //     v = cmd_vel_.linear.x;
+                //     w = cmd_vel_.angular.z;
+                // }
+
                 direction = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, direction));
                 if(abs(w) > 1e-2){
                     double r = abs(v / w);
@@ -162,6 +171,26 @@ void CCV2Teleoperator::process(void)
                     d_o = direction;
                 }
             }else{
+                if(mode == 1)
+                {
+                    v = cmd_vel_.linear.x;
+                    w = cmd_vel_.angular.z;
+                }
+
+                direction = std::max(-MAX_STEERING_ANGLE, std::min(MAX_STEERING_ANGLE, direction));
+                if(abs(w) > 1e-2){
+                    double r = abs(v / w);
+                    d_i = atan(r * sin(direction) / (r * cos(direction) - TREAD / 2.0));
+                    d_o = atan(r * sin(direction) / (r * cos(direction) + TREAD / 2.0));
+                    if(w < 0.0){
+                        double buf = d_i;
+                        d_i = d_o;
+                        d_o = buf;
+                    }
+                }else{
+                    d_i = direction;
+                    d_o = direction;
+                }
                 // std::cout << "press L1 to move" << std::endl;
             }
             std::cout << "v: " << v << ", " << "w: " << w << ", " << "direction: " << direction << std::endl;
@@ -188,13 +217,13 @@ void CCV2Teleoperator::process(void)
             ccv_dynamixel_msgs::CmdPoseByRadian cmd_pos;
             if(mode!=1)
             {
-                cmd_pos.steer_r = -d_o;
-                cmd_pos.steer_l = -d_i;
+                cmd_pos.steer_r = -d_o+STEER_R_OFFSET;
+                cmd_pos.steer_l = -d_i+STEER_L_OFFSET;
             }
             else
             {
-                cmd_pos.steer_r = cmd_pos_.steer_r;
-                cmd_pos.steer_l = cmd_pos_.steer_l;
+                cmd_pos.steer_r = cmd_pos_.steer_r+STEER_R_OFFSET;
+                cmd_pos.steer_l = cmd_pos_.steer_l+STEER_L_OFFSET;
             }
             cmd_pos.fore = -pitch + PITCH_OFFSET;
             cmd_pos.rear = pitch + PITCH_OFFSET;

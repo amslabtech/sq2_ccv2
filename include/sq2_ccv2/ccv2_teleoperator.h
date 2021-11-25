@@ -47,6 +47,8 @@ private:
     double MAX_PITCH_ANGLE;
     double MAX_ROLL_ANGLE;
     double PITCH_OFFSET;
+    double STEER_R_OFFSET;
+    double STEER_L_OFFSET;
     double TREAD;
 
     ros::NodeHandle nh;
