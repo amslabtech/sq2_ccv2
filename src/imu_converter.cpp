@@ -53,7 +53,8 @@ void IMUConverter::process(void)
 {
     char *id = "imu_converter";
     // char *host = "localhost";
-    char *host = "192.168.0.172";
+    char *host = "192.168.0.34";
+    // char *host = "192.168.0.172";
     int port = 1883;
     int keepalive = 60;
     bool clean_session = true;
@@ -89,7 +90,11 @@ void IMUConverter::process(void)
             static uint32_t seq = 0;
             imu.header.seq = seq;
             seq++;
-            imu.orientation = tf::createQuaternionMsgFromRollPitchYaw(data->fusion[0], data->fusion[1], -1*data->fusion[2]);
+            // imu.orientation = tf::createQuaternionMsgFromRollPitchYaw(-1*data->fusion[0], data->fusion[1], data->fusion[2]);
+            imu.orientation.x = data->quaternion[0];
+            imu.orientation.y = data->quaternion[1];
+            imu.orientation.z = data->quaternion[2];
+            imu.orientation.w = data->quaternion[3];
             imu.angular_velocity.x = data->gyro[0];
             imu.angular_velocity.y = data->gyro[1];
             imu.angular_velocity.z = -1*data->gyro[2];
@@ -98,6 +103,7 @@ void IMUConverter::process(void)
             imu.linear_acceleration.z = -1*data->accel[2];
             imu_pub.publish(imu);
             std::cout << imu << std::endl;
+            // std::cout<<"R,P,Y "<<data->fusion[0]<<","<<data->fusion[1]<<","<<data->fusion[2]<<std::endl;
 
             data = NULL;
         }else{

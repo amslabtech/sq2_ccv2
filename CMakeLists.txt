@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
     tf
     ccv_dynamixel_msgs
     tf2
+    dynamixel_workbench_msgs
 )
 
 
