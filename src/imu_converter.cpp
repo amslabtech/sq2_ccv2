@@ -53,8 +53,8 @@ void IMUConverter::process(void)
 {
     char *id = "imu_converter";
     // char *host = "localhost";
-    char *host = "192.168.0.34";
-    // char *host = "192.168.0.172";
+    // char *host = "192.168.0.34";
+    char *host = "192.168.0.172";
     int port = 1883;
     int keepalive = 60;
     bool clean_session = true;
