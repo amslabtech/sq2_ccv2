@@ -74,7 +74,7 @@ void ImuToDeg::imu_callback(const sensor_msgs::Imu::ConstPtr &msg)
     // if(fabs(roll/M_PI*180)>0.1)
     // {
     ROS_INFO("roll: %lf pitch: %lf yaw: %lf", roll/M_PI*180, pitch/M_PI*180, yaw/M_PI*180);
-    ROS_INFO("quaternion_norm: %lf\n",sqrt(msg->orientation.x*msg->orientation.x+msg->orientation.y*msg->orientation.y+msg->orientation.z*msg->orientation.z+msg->orientation.w*msg->orientation.w ));
+    // ROS_INFO("quaternion_norm: %lf\n",sqrt(msg->orientation.x*msg->orientation.x+msg->orientation.y*msg->orientation.y+msg->orientation.z*msg->orientation.z+msg->orientation.w*msg->orientation.w ));
     // ROS_INFO("quaternion: %lf %lf %lf %lf", msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
     std_msgs::Float32 theta;
     theta.data = roll/M_PI*180;
