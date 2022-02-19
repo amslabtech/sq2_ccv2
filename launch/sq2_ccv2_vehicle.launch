@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-    <node pkg="ypspur_ros" type="ypspur_ros" name="t_frog" respawn="true">
+    <node pkg="ypspur_ros" type="ypspur_ros" name="t_frog" respawn="true" args="_compatible:=1">
 
         <remap from="~/cmd_vel" to="/cmd_vel" />
         <remap from="~/odom" to="/odom" />
@@ -12,7 +12,7 @@
 
         <param name="param_file" value="$(find sq2_ccv2)/config/sq2_ccv2.param" />
 
-        <param name="port" value="/dev/T_Frog"/>
+        <param name="port" value="/dev/t-frog"/>
 
         <param name="hz" value="50.0" />
         <param name="ipc_key" value="28742" />

@@ -1,0 +1,28 @@
+{
+    "mode": "pitch",
+    "x": {
+        "value": 0.0,
+        "step": 0.1
+    },
+    "y": {
+        "value": 0.0,
+        "step": 0.1
+    },
+    "z": {
+        "value": 0.0,
+        "step": 0.1
+    },
+    "azimuth": {
+        "value": 0.0,
+        "step": 1
+    },
+    "pitch": {
+        "value": 40.0,
+        "step": 1
+    },
+    "roll": {
+        "value": 0.0,
+        "step": 1
+    },
+    "message": ""
+}

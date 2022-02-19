@@ -9,7 +9,10 @@ find_package(catkin REQUIRED
     geometry_msgs
     nav_msgs
     tf
+    ccv_dynamixel_msgs
+    tf2
 )
+
 
 find_package(ypspur_mqtt REQUIRED)
 
@@ -22,6 +25,9 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS}
 )
+
+catkin_install_python(PROGRAMS scripts/set_cams_transforms.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 
 add_executable(ccv2_teleoperator src/ccv2_teleoperator_node.cpp src/ccv2_teleoperator.cpp)
 add_dependencies(ccv2_teleoperator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -43,3 +49,7 @@ target_link_libraries(imu_converter
     mosquitto
     ${catkin_LIBRARIES}
 )
+
+add_executable(imu_to_deg src/imu_to_deg.cpp)
+add_dependencies(imu_to_deg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(imu_to_deg ${catkin_LIBRARIES})
