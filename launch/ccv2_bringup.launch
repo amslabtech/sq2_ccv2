@@ -8,10 +8,10 @@
     <!--     <param name="publish_frequency" value="200.0" /> -->
     <!-- </node> -->
     <include file="$(find sq2_ccv2)/launch/ccv2_tf.launch"/>
-    <node name="steering_odom_publisher" pkg="ccv_pure_pursuit_steering" type="steering_odom">
-        <param name="steer_r_offset" value="3.25"/>
-        <param name="steer_l_offset" value="0.00"/>
-    </node>
+    <!-- <node name="steering_odom_publisher" pkg="ccv_pure_pursuit_steering" type="steering_odom"> -->
+        <!-- <param name="steer_r_offset" value="3.25"/> -->
+        <!-- <param name="steer_l_offset" value="0.00"/> -->
+    <!-- </node> -->
     <!-- vehicle  -->
     <include file="$(find sq2_ccv2)/launch/sq2_ccv2_vehicle.launch"/>
     <!-- sq lidar -->

@@ -59,13 +59,12 @@ private:
     ros::Subscriber sub_cmd_vel_;
     ros::Subscriber sub_cmd_pos_;
 
-    sensor_msgs::Joy joy_;
+    sensor_msgs::Joy joy;
     geometry_msgs::Twist cmd_vel_;
-    geometry_msgs::Twist joy_vel_;
     ccv_dynamixel_msgs::CmdPoseByRadian cmd_pos_;
-    ccv_dynamixel_msgs::CmdPoseByRadian joy_pos_;
     bool joy_subscribed;
     bool auto_flag_, move_flag_, joy_flag_;
+    int mode;
 
     // MQTT
     struct mosquitto *mosq;
