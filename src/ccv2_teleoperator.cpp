@@ -45,7 +45,7 @@ CCV2Teleoperator::CCV2Teleoperator(void)
 
     local_nh.param<double>("MAX_VELOCITY", MAX_VELOCITY, {1.5});
     local_nh.param<double>("MAX_ANGULAR_VELOCITY", MAX_ANGULAR_VELOCITY, {M_PI});
-    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {M_PI/20});
+    local_nh.param<double>("MAX_STEERING_ANGLE", MAX_STEERING_ANGLE, {20*M_PI/180});
     local_nh.param<double>("MAX_PITCH_ANGLE", MAX_PITCH_ANGLE, {M_PI / 12.0});
     local_nh.param<double>("MAX_ROLL_ANGLE", MAX_ROLL_ANGLE, {M_PI / 24.0});
     local_nh.param<double>("PITCH_OFFSET", PITCH_OFFSET, {0.0 * M_PI / 180.0});
@@ -222,8 +222,8 @@ void CCV2Teleoperator::process(void)
             }
             else
             {
-                cmd_pos.steer_r = cmd_pos_.steer_r+STEER_R_OFFSET;
-                cmd_pos.steer_l = cmd_pos_.steer_l+STEER_L_OFFSET;
+                cmd_pos.steer_r = -cmd_pos_.steer_r+STEER_R_OFFSET;
+                cmd_pos.steer_l = -cmd_pos_.steer_l+STEER_L_OFFSET;
             }
             cmd_pos.fore = -pitch + PITCH_OFFSET;
             cmd_pos.rear = pitch + PITCH_OFFSET;
@@ -232,7 +232,8 @@ void CCV2Teleoperator::process(void)
             // std::cout << "servo states: " << std::endl;
             // servo_command.print_command();
             pub_cmd_pos_.publish(cmd_pos);
-            std::cout << "send command of dynamixels:\n" << cmd_pos <<std::endl;
+            // std::cout << "send command of dynamixels:\n" << cmd_pos <<std::endl;
+            std::cout<<"steer_l: "<<cmd_pos.steer_l/M_PI*180<<" ,steer_r: "<<cmd_pos.steer_r/M_PI*180<<std::endl;
         }
         ros::spinOnce();
         loop_rate.sleep();
