@@ -53,3 +53,9 @@ target_link_libraries(imu_converter
 add_executable(imu_to_deg src/imu_to_deg.cpp)
 add_dependencies(imu_to_deg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(imu_to_deg ${catkin_LIBRARIES})
+
+add_executable(battery_box_tf_broadcaster src/battery_box_tf_broadcaster.cpp src/battery_box_tf_broadcaster.cpp)
+add_dependencies(battery_box_tf_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(battery_box_tf_broadcaster
+    ${catkin_LIBRARIES}
+)

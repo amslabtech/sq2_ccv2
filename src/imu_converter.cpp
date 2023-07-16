@@ -89,13 +89,17 @@ void IMUConverter::process(void)
             static uint32_t seq = 0;
             imu.header.seq = seq;
             seq++;
-            imu.orientation = tf::createQuaternionMsgFromRollPitchYaw(data->fusion[0], data->fusion[1], -1*data->fusion[2]);
+            imu.orientation = tf::createQuaternionMsgFromRollPitchYaw(-1*data->fusion[0], data->fusion[1], -1*data->fusion[2]);
+            // imu.orientation.x = data->quaternion[0];
+            // imu.orientation.y = data->quaternion[1];
+            // imu.orientation.z = data->quaternion[2];
+            // imu.orientation.w = data->quaternion[3];
             imu.angular_velocity.x = data->gyro[0];
-            imu.angular_velocity.y = data->gyro[1];
-            imu.angular_velocity.z = -1*data->gyro[2];
+            imu.angular_velocity.y = -1*data->gyro[1];
+            imu.angular_velocity.z = data->gyro[2];
             imu.linear_acceleration.x = data->accel[0];
-            imu.linear_acceleration.y = data->accel[1];
-            imu.linear_acceleration.z = -1*data->accel[2];
+            imu.linear_acceleration.y = -1*data->accel[1];
+            imu.linear_acceleration.z = data->accel[2];
             imu_pub.publish(imu);
             std::cout << imu << std::endl;
 
