@@ -11,6 +11,8 @@ find_package(catkin REQUIRED
     tf
     ccv_dynamixel_msgs
     tf2
+    tf2_ros
+    tf2_geometry_msgs
 )
 
 find_package(ypspur_mqtt REQUIRED)
