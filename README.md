@@ -2,6 +2,7 @@
 ROS package and parameter files for SQ2-CCV2
 
 # Dependencies
+- [MqttClass](https://github.com/amslabtech/MqttClass)
 - [ypspur_mqtt](https://github.com/amslabtech/ypspur_mqtt)
 - [ccv_dynamixel_controller](https://github.com/amslabtech/ccv_dynamixel_controller)
 
