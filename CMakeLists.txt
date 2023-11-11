@@ -11,10 +11,15 @@ find_package(catkin REQUIRED
     tf
     ccv_dynamixel_msgs
     tf2
+    tf2_ros
+    tf2_geometry_msgs
 )
 
-
 find_package(ypspur_mqtt REQUIRED)
+
+find_package(PkgConfig)
+
+pkg_check_modules(libmosquitto REQUIRED libmosquitto)
 
 catkin_package(
     INCLUDE_DIRS include
@@ -24,6 +29,7 @@ catkin_package(
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
+    ${libmosquitto_INCLUDE_DIRS}
 )
 
 catkin_install_python(PROGRAMS scripts/set_cams_transforms.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -32,21 +38,21 @@ catkin_install_python(PROGRAMS scripts/set_cams_transforms.py DESTINATION ${CATK
 add_executable(ccv2_teleoperator src/ccv2_teleoperator_node.cpp src/ccv2_teleoperator.cpp)
 add_dependencies(ccv2_teleoperator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ccv2_teleoperator
-    mosquitto
+    ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
 )
 
 add_executable(odom_converter src/odom_converter_node.cpp src/odom_converter.cpp)
 add_dependencies(odom_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(odom_converter
-    mosquitto
+    ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
 )
 
 add_executable(imu_converter src/imu_converter_node.cpp src/imu_converter.cpp)
 add_dependencies(imu_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(imu_converter
-    mosquitto
+    ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
 )
 
