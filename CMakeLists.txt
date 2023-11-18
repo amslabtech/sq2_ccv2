@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
 )
 
 find_package(ypspur_mqtt REQUIRED)
+find_package(imu_subscriber REQUIRED)
 
 find_package(PkgConfig)
 
@@ -40,6 +41,7 @@ add_dependencies(ccv2_teleoperator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 target_link_libraries(ccv2_teleoperator
     ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
+    libypspur_mqtt
 )
 
 add_executable(odom_converter src/odom_converter_node.cpp src/odom_converter.cpp)
@@ -47,6 +49,7 @@ add_dependencies(odom_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXP
 target_link_libraries(odom_converter
     ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
+    libypspur_mqtt
 )
 
 add_executable(imu_converter src/imu_converter_node.cpp src/imu_converter.cpp)
@@ -54,6 +57,7 @@ add_dependencies(imu_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 target_link_libraries(imu_converter
     ${libmosquitto_LIBRARIES}
     ${catkin_LIBRARIES}
+    libimu_subscriber
 )
 
 add_executable(imu_to_deg src/imu_to_deg.cpp)

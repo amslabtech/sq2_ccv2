@@ -1,0 +1,12 @@
+- git:
+    local-name: mqttclass
+    uri: https://github.com/amslabtech/MqttClass.git
+    version: update-build-and-install
+- git:
+    local-name: ypspur_mqtt
+    uri: https://github.com/amslabtech/ypspur_mqtt.git
+    version: fix-dependency-and-install
+- git:
+    local-name: imu_subscriber
+    uri: https://github.com/amslabtech/imu_subscriber.git
+    version: fix-dependency-and-install
