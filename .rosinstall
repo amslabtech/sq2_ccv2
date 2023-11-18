@@ -9,4 +9,4 @@
 - git:
     local-name: imu_subscriber
     uri: https://github.com/amslabtech/imu_subscriber.git
-    version: fix-dependency-and-install
+    version: fix-build-and-install
